@@ -77,6 +77,8 @@ class UserFilter(BaseModel):
     stage: Optional[int] = None
     gender: Optional[str] = None
     email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    track_id: Optional[int] = None
 
 
 # API endpoints for CRUD operations on User
@@ -107,6 +109,10 @@ def get_users(filter_criteria: Optional[UserFilter] = None):
             filter_conditions.append(User.gender == filter_criteria.gender)
         if filter_criteria.email:
             filter_conditions.append(User.email == filter_criteria.email)
+        if filter_criteria.username:
+            filter_conditions.append(User.username == filter_criteria.username)
+        if filter_criteria.track_id is not None:
+            filter_conditions.append(User.track_id == filter_criteria.track_id)
 
     # Add the condition to filter out deleted users
     filter_conditions.append(User.is_deleted == False)
