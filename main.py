@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Boolean, func
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -28,12 +28,12 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     gender = Column(String(1), nullable=True)
-    email = Column(String, nullable=True)
-    username = Column(String(128), nullable=True)
+    email = Column(String, unique=True, nullable=True)
+    username = Column(String(128), unique=True, nullable=True)
     track_id = Column(Integer, ForeignKey("tracks.id"), nullable=True)
     stage = Column(Integer, default=0)
-    date_created = Column(DateTime, default=datetime.utcnow)
-    date_modified = Column(DateTime, onupdate=datetime.utcnow)
+    date_created = Column(DateTime, server_default=func.now())
+    date_modified = Column(DateTime, server_default=func.now(), onupdate=func.now())
     is_deleted = Column(Boolean, default=False)
 
     # Define the relationship between User and Track
@@ -47,26 +47,28 @@ Track.users = relationship("User", back_populates="track")
 # Pydantic models for request and response
 class UserCreate(BaseModel):
     name: str
-    gender: str = None
-    email: EmailStr = None
-    username: str = None
-    track_id: int = None
+    gender: Optional[str] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    track_id: Optional[int] = None
 
 
 class UserUpdate(BaseModel):
-    name: str
-    gender: str = None
-    email: EmailStr = None
-    username: str = None
-    track_id: int = None
+    name: Optional[str] = None
+    gender: Optional[str] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    track_id: Optional[int] = None
 
 
 class UserResponse(BaseModel):
+    id: int
     name: str
-    gender: str = None
-    email: EmailStr = None
-    username: str = None
-    track_id: int = None
+    gender: Optional[str] = None
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    track_id: Optional[int] = None
+    date_modified: Optional[datetime] = None
 
 
 # API endpoints for CRUD operations on User
@@ -107,8 +109,16 @@ def update_user(user_id: int, updated_user: UserUpdate):
         db.close()
         raise HTTPException(status_code=404, detail="User not found")
 
-    for field, value in updated_user.model_dump().items():
-        setattr(db_user, field, value)
+    if updated_user.name is not None:
+        db_user.name = updated_user.name
+    if updated_user.gender is not None:
+        db_user.gender = updated_user.gender
+    if updated_user.email is not None:
+        db_user.email = updated_user.email
+    if updated_user.username is not None:
+        db_user.username = updated_user.username
+    if updated_user.track_id is not None:
+        db_user.track_id = updated_user.track_id
 
     db.commit()
     db.refresh(db_user)
