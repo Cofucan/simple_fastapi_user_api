@@ -71,6 +71,14 @@ class UserResponse(BaseModel):
     date_modified: Optional[datetime] = None
 
 
+# Pydantic model for filtering criteria
+class UserFilter(BaseModel):
+    name: Optional[str] = None
+    stage: Optional[int] = None
+    gender: Optional[str] = None
+    email: Optional[EmailStr] = None
+
+
 # API endpoints for CRUD operations on User
 @app.post("/api/", response_model=UserResponse)
 def create_user(user: UserCreate):
@@ -83,10 +91,29 @@ def create_user(user: UserCreate):
     return db_user
 
 
+# API endpoint to get users with filtering criteria
 @app.get("/api/", response_model=List[UserResponse])
-def get_all_users():
+def get_users(filter_criteria: Optional[UserFilter] = None):
     db = SessionLocal()
-    users = db.query(User).filter(User.is_deleted == False).all()
+
+    # Build the filter conditions based on the JSON request
+    filter_conditions = []
+    if filter_criteria:
+        if filter_criteria.name:
+            filter_conditions.append(User.name == filter_criteria.name)
+        if filter_criteria.stage is not None:
+            filter_conditions.append(User.stage == filter_criteria.stage)
+        if filter_criteria.gender:
+            filter_conditions.append(User.gender == filter_criteria.gender)
+        if filter_criteria.email:
+            filter_conditions.append(User.email == filter_criteria.email)
+
+    # Add the condition to filter out deleted users
+    filter_conditions.append(User.is_deleted == False)
+
+    # Apply the filter conditions to the query
+    users = db.query(User).filter(*filter_conditions).all()
+
     db.close()
     return users
 
