@@ -86,7 +86,7 @@ def create_user(user: UserCreate):
 @app.get("/api/", response_model=List[UserResponse])
 def get_all_users():
     db = SessionLocal()
-    users = db.query(User).all()
+    users = db.query(User).filter(User.is_deleted == False).all()
     db.close()
     return users
 
@@ -96,7 +96,7 @@ def get_user(user_id: int):
     db = SessionLocal()
     user = db.query(User).filter(User.id == user_id).first()
     db.close()
-    if user is None:
+    if user is None or user.is_deleted:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
@@ -105,7 +105,7 @@ def get_user(user_id: int):
 def update_user(user_id: int, updated_user: UserUpdate):
     db = SessionLocal()
     db_user = db.query(User).filter(User.id == user_id).first()
-    if db_user is None:
+    if db_user is None or db_user.is_deleted:
         db.close()
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -134,7 +134,8 @@ def delete_user(user_id: int):
         db.close()
         raise HTTPException(status_code=404, detail="User not found")
 
-    db.delete(db_user)
+    db_user.is_deleted = True
     db.commit()
+    db.refresh(db_user)
     db.close()
     return db_user
