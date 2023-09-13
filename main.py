@@ -1,5 +1,8 @@
-from fastapi import FastAPI, HTTPException
+""" A simple FastAPI CRUD app """
+from datetime import datetime
 from typing import List, Optional
+
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, EmailStr
 from sqlalchemy import (
     create_engine,
@@ -13,7 +16,6 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
 
 app = FastAPI()
 
@@ -95,6 +97,15 @@ class UserFilter(BaseModel):
 # API endpoints for CRUD operations on User
 @app.post("/api/", response_model=UserResponse)
 def create_user(user: UserCreate):
+    """
+    Create a new user in the database.
+
+    Parameters:
+        user (UserCreate): The user data to create.
+
+    Returns:
+        User: The created user.
+    """
     db = SessionLocal()
     db_user = User(**user.model_dump())
     db.add(db_user)
@@ -107,6 +118,18 @@ def create_user(user: UserCreate):
 # API endpoint to get users with filtering criteria
 @app.get("/api/", response_model=List[UserResponse])
 def get_users(filter_criteria: Optional[UserFilter] = None):
+    """
+    Retrieves a list of users from the database based on the provided filter
+    criteria.
+
+    Parameters:
+    - filter_criteria (Optional[UserFilter]): The filter criteria to apply to
+    the query. Defaults to None.
+
+    Returns:
+    - List[UserResponse]: A list of UserResponse objects representing the
+    retrieved users.
+    """
     db = SessionLocal()
 
     # Build the filter conditions based on the JSON request
@@ -137,6 +160,18 @@ def get_users(filter_criteria: Optional[UserFilter] = None):
 
 @app.get("/api/{user_id}", response_model=UserResponse)
 def get_user(user_id: int):
+    """
+    Get a user from the database by their ID.
+
+    Args:
+        user_id (int): The ID of the user to retrieve.
+
+    Returns:
+        UserResponse: The user object.
+
+    Raises:
+        HTTPException: If the user is not found or has been deleted.
+    """
     db = SessionLocal()
     user = db.query(User).filter(User.id == user_id).first()
     db.close()
@@ -147,6 +182,19 @@ def get_user(user_id: int):
 
 @app.put("/api/{user_id}", response_model=UserResponse)
 def update_user(user_id: int, updated_user: UserUpdate):
+    """
+    Updates a user in the API.
+
+    Args:
+        user_id (int): The ID of the user to be updated.
+        updated_user (UserUpdate): The updated user data.
+
+    Returns:
+        UserResponse: The updated user.
+
+    Raises:
+        HTTPException: If the user is not found.
+    """
     db = SessionLocal()
     db_user = db.query(User).filter(User.id == user_id).first()
     if db_user is None or db_user.is_deleted:
@@ -172,6 +220,18 @@ def update_user(user_id: int, updated_user: UserUpdate):
 
 @app.delete("/api/{user_id}", response_model=UserResponse)
 def delete_user(user_id: int):
+    """
+    Deletes a user from the database.
+
+    Parameters:
+        user_id (int): The ID of the user to be deleted.
+
+    Returns:
+        UserResponse: The deleted user object.
+
+    Raises:
+        HTTPException: If the user is not found in the database.
+    """
     db = SessionLocal()
     db_user = db.query(User).filter(User.id == user_id).first()
     if db_user is None:
