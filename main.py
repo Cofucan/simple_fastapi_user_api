@@ -1,7 +1,16 @@
 from fastapi import FastAPI, HTTPException
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, Boolean, func
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    Boolean,
+    func,
+)
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
@@ -33,7 +42,9 @@ class User(Base):
     track_id = Column(Integer, ForeignKey("tracks.id"), nullable=True)
     stage = Column(Integer, default=0)
     date_created = Column(DateTime, server_default=func.now())
-    date_modified = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    date_modified = Column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
     is_deleted = Column(Boolean, default=False)
 
     # Define the relationship between User and Track
