@@ -17,10 +17,17 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
+from config import MYSQL_USER, MYSQL_PASSWORD, SERVER_IP, DB_NAME
+
 app = FastAPI()
 
+mysql_user = MYSQL_USER
+mysql_password = MYSQL_PASSWORD
+server_ip = SERVER_IP
+db_name = DB_NAME
+
 # SQLAlchemy Setup
-DATABASE_URL = "mysql+mysqlconnector://uche:password@localhost/hngdb_stage_two"
+DATABASE_URL = f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@{server_ip}/{db_name}"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
