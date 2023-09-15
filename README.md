@@ -2,6 +2,10 @@
 
 A simple RESTful API for user management built with FastAPI and SQLAlchemy. This API provides basic CRUD operations for managing user records in a MySQL database. It also supports filtering and querying users based on various criteria.
 
+The only required parameter for the endpoints that require a parameter is the `name` parameter. All other fields are optional.
+
+There is a foreign key relationship between the `users` table and the `tracks` table. Before a user is assigned a track (represented by `track_id` on the user table), there must have been some tracks created so the user can be assigned a track that exists.
+
 ## Table of Contents
 
 - Features
@@ -12,8 +16,6 @@ A simple RESTful API for user management built with FastAPI and SQLAlchemy. This
 - Request and Response Formats
 - Sample Usage
 - Known Limitations
-- Contributing
-- License
 
 ## Features
 
@@ -29,9 +31,10 @@ A simple RESTful API for user management built with FastAPI and SQLAlchemy. This
 
 Before running the application, ensure you have the following prerequisites installed:
 
-- Python 3.7 or higher
+- Python 3.8 or higher
 - MySQL database server
 - MySQL connector for Python (install with pip install mysql-connector-python)
+- Psycopg2 for PostgreSQL (install with pip install psycopg2-binary)
 - FastAPI and SQLAlchemy (install with pip install fastapi sqlalchemy)
 
 ## Installation
@@ -39,42 +42,42 @@ Before running the application, ensure you have the following prerequisites inst
 1. Clone the repository:
 
     ```shell
-   git clone https://github.com/yourusername/fastapi-user-management.git
+   git clone https://github.com/Cofucan/fastapi-user-management.git
     ```
 
 2. Change to the project directory:
 
-```shell
-cd fastapi-user-management
-```
+   ```shell
+   cd fastapi-user-management
+   ```
 
 3. Create a virtual environment (optional but recommended):
 
-```shell
-python -m venv venv
-```
+   ```shell
+   python -m venv venv
+   ```
 
 4. Activate the virtual environment:
 
-```shell
-venv\Scripts\activate
-```
+   ```shell
+   venv\Scripts\activate
+   ```
 
 5. Install project dependencies:
 
-```shell
-pip install -r requirements.txt
-```
+   ```shell
+   pip install -r requirements.txt
+   ```
 
 6. Configure the database:
 
-- Update the `DATABASE_URL` variable in the `main.py` file to point to your MySQL database.
+   - Update the `DATABASE_URL` variable in the `main.py` file to point to your MySQL database.
 
 7. Run the application:
 
-```shell
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
+   ```shell
+   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
 
 The API will be accessible at http://localhost:8000.
 
@@ -191,3 +194,56 @@ Response:
   }
 ]
 ```
+
+Get User by ID
+
+> GET /api/2
+
+Response
+
+```json
+{
+  "id": 2,
+  "name": "Alex Jones",
+  "gender": null,
+  "email": null,
+  "username": null,
+  "track_id": null,
+  "date_modified": "2023-09-15T04:05:00.786386"
+}
+```
+
+Update User Information
+
+> PUT /api/2
+
+```json
+{
+  "name": "Jane Doe",
+  "gender": "F",
+  "email": "janedoe@example.com"
+}
+```
+
+Response
+
+```json
+{
+    "id": 2,
+    "name": "Jane Doe",
+    "gender": "f",
+    "email": "janedoe@example.com",
+    "username": null,
+    "track_id": null,
+    "date_modified": "2023-09-15T08:14:17.916300"
+}
+```
+
+Delete a User: When a user is deleted, the `is_deleted` column is set to `true` but the record still remains. This is done for data recovery purposes. The data would be deleted from the server after some stipulated amount of time.
+
+> DELETE /api/1
+
+### Known Limitations
+
+- The API does not provide user authentication or authorization. It is recommended to implement authentication middleware for production use.
+- Error handling could be improved with more detailed error messages for different scenarios.
