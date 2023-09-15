@@ -1,13 +1,7 @@
-fastapi~=0.103.1
-uvicorn
-pytest~=7.4.2
-pytest-asyncio
-
-pydantic~=2.3.0
-SQLAlchemy~=2.0.20
 annotated-types==0.5.0
 anyio==3.7.1
 click==8.1.7
+configparser==6.0.0
 dnspython==2.4.2
 email-validator==2.0.0.post2
 fastapi==0.103.1
