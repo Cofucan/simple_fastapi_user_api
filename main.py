@@ -17,17 +17,20 @@ from sqlalchemy import (
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.ext.declarative import declarative_base
 
-from config import MYSQL_USER, MYSQL_PASSWORD, SERVER_IP, DB_NAME
+# from config import MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DB
+from config import POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_HOST, POSTGRES_PORT, POSTGRES_DB
 
 app = FastAPI()
 
-mysql_user = MYSQL_USER
-mysql_password = MYSQL_PASSWORD
-server_ip = SERVER_IP
-db_name = DB_NAME
+db_user = POSTGRES_USER
+db_password = POSTGRES_PASSWORD
+db_host = POSTGRES_HOST
+db_name = POSTGRES_DB
+db_port = POSTGRES_PORT
 
-# SQLAlchemy Setup
-DATABASE_URL = f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@{server_ip}/{db_name}"
+# Database Setup
+# DATABASE_URL = f"mysql+mysqlconnector://{mysql_user}:{mysql_password}@{server_ip}:{port}/{db_name}"
+DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
